@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        :root, [data-theme="indigo"] {
+            --color-primary: 99 102 241;
+            --color-primary-hover: 79 70 229;
+            --gradient-from: rgba(49, 46, 129, 0.2);
+            --theme-primary-rgb: 99, 102, 241;
+        }
+        [data-theme="emerald"] {
+            --color-primary: 16 185 129;
+            --color-primary-hover: 5 150 105;
+            --gradient-from: rgba(6, 78, 59, 0.2);
+            --theme-primary-rgb: 16, 185, 129;
+        }
+        [data-theme="rose"] {
+            --color-primary: 244 63 94;
+            --color-primary-hover: 225 29 72;
+            --gradient-from: rgba(136, 19, 55, 0.2);
+            --theme-primary-rgb: 244, 63, 94;
+        }
+
+        .theme-transition {
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .loader {
+            width: 25px;
+            aspect-ratio: 1;
+            display: grid;
+        }
+        .loader,
+        .loader:before,
+        .loader:after {
+            --c: no-repeat linear-gradient(rgb(var(--theme-primary-rgb)) 0 0);
+            background: var(--c), var(--c), var(--c), var(--c);
+            animation: l20-1 1.5s infinite linear, l20-2 1.5s infinite linear;
+        }
+        .loader:before,
+        .loader:after {
+            content: "";
+            grid-area: 1/1;
+            transform: translate(calc(100% - 4px), calc(4px - 100%)) rotate(90deg);
+        }
+        .loader:after {
+            transform: translate(calc(4px - 100%), calc(100% - 4px)) rotate(-90deg);
+        }
+        @keyframes l20-1 {
+            0%   {background-size: 0    4px,4px 0   ,0    4px,4px 0   }
+            12.5%{background-size: 100% 4px,4px 0   ,0    4px,4px 0   }
+            25%  {background-size: 100% 4px,4px 100%,0    4px,4px 0   }
+            37.5%{background-size: 100% 4px,4px 100%,100% 4px,4px 0   }
+            43%,
+            57%  {background-size: 100% 4px,4px 100%,100% 4px,4px 100%}
+            62.5%{background-size: 0    4px,4px 100%,100% 4px,4px 100%}
+            75%  {background-size: 0    4px,4px 0   ,100% 4px,4px 100%}
+            87.5%{background-size: 0    4px,4px 0   ,0    4px,4px 100%}
+            100% {background-size: 0    4px,4px 0   ,0    4px,4px 0   }
+        }
+        @keyframes l20-2 {
+            0%,49.9%{background-position: 0 0   ,100% 0   ,100% 100%,0 100%}
+            50%,100%{background-position: 100% 0,100% 100%,0    100%,0 0   }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        themePrimary: 'rgb(var(--color-primary) / <alpha-value>)',
+                        themePrimaryHover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between relative overflow-hidden theme-transition">
+
+    <div id="loadingScreen" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center transition-opacity duration-700 ease-out opacity-100">
+        <div class="loader"></div>
+    </div>
+
+    <div id="bgGradient" class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[var(--gradient-from)] via-slate-950 to-slate-950 -z-10 theme-transition"></div>
+
+    <button 
+        id="logoWidget" 
+        onclick="cycleTheme()" 
+        class="absolute top-6 left-6 z-20 select-none opacity-0 transition-all duration-1000 cursor-pointer focus:outline-none group active:scale-95"
+        title="Change Theme"
+    >
+        <span class="text-2xl font-black tracking-tighter bg-gradient-to-r from-rose-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-sm transition-transform duration-300 group-hover:scale-105 block">
+            ZC
+        </span>
+    </button>
+
+    <div class="absolute top-6 right-6 z-20 text-right font-mono select-none pointer-events-none opacity-0 transition-opacity duration-1000" id="dateTimeWidget">
+        <div id="liveTime" class="text-base font-semibold text-slate-200 tracking-wider">00:00 AM</div>
+        <div id="liveDate" class="text-[10px] uppercase text-slate-500 tracking-widest mt-0.5">Loading Date...</div>
+    </div>
+
+    <div></div>
+
+    <main class="w-full max-w-sm mx-auto px-6 flex flex-col items-center justify-center">
+        <div class="text-center mb-8">
+            <h1 id="greetingText" class="text-2xl font-bold tracking-tight text-white mb-1 opacity-0 transition-opacity duration-1000">Welcome</h1>
+            <p class="text-xs text-slate-500 tracking-wide">Select a dashboard destination to proceed</p>
+        </div>
+
+        <div class="w-full flex flex-col items-center justify-center gap-4">
+            <button 
+                type="button"
+                onclick="openAuthModal('PersonalVault.html', 'Account Organizer')"
+                class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-slate-900/50 border border-slate-800/80 hover:border-themePrimary hover:bg-themePrimary/10 text-slate-300 hover:text-white rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-themePrimary/10 text-sm font-medium backdrop-blur-md group theme-transition"
+            >
+                <i data-lucide="ticket" class="w-5 h-5 text-themePrimary transition-all duration-300 group-hover:scale-110"></i>
+                <span class="transition-colors duration-300">Class Pass</span>
+            </button>
+
+            <a 
+                href="Schedule.html"
+                class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-slate-900/50 border border-slate-800/80 hover:border-themePrimary hover:bg-themePrimary/10 text-slate-300 hover:text-white rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-themePrimary/10 text-sm font-medium backdrop-blur-md group theme-transition"
+            >
+                <i data-lucide="calendar-range" class="w-5 h-5 text-themePrimary transition-all duration-300 group-hover:scale-110"></i>
+                <span class="transition-colors duration-300">Class Schedule</span>
+            </a>
+        </div>
+    </main>
+
+    <div></div>
+
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-slate-950/80 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm mx-4 transform scale-95 opacity-0 transition-all duration-300 shadow-2xl shadow-themePrimary/5 text-center" id="modalCard">
+            <div class="inline-flex p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl mb-4">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+            
+            <h3 class="text-lg font-bold text-white mb-1">Master Password Required</h3>
+            <p class="text-xs text-slate-400 mb-5">Please authenticate to view <span id="targetItemName" class="text-themePrimary font-medium">Resource</span>.</p>
+
+            <form id="modalForm" class="space-y-4">
+                <div class="relative">
+                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4"></i>
+                    <input 
+                        type="password" 
+                        id="modalPasscode" 
+                        placeholder="Enter Password" 
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-themePrimary focus:border-transparent transition text-sm text-white placeholder:text-slate-600 font-mono"
+                        required
+                    >
+                </div>
+                <div id="modalError" class="text-rose-400 text-xs hidden flex items-center justify-center gap-1 py-0.5">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                    <span>Incorrect password.</span>
+                </div>
+                
+                <div class="flex items-center gap-3 pt-2">
+                    <button 
+                        type="button" 
+                        onclick="closeAuthModal()"
+                        class="flex-1 bg-slate-800 hover:bg-slate-700/80 text-slate-300 font-medium py-2.5 px-4 rounded-xl transition text-xs border border-slate-700/50"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="flex-1 bg-themePrimary hover:bg-themePrimaryHover text-white font-medium py-2.5 px-4 rounded-xl transition text-xs shadow-md shadow-themePrimary/10"
+                    >
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
