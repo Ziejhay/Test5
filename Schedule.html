@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Weekly Schedule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            
+            /* Day Colors */
+            --mon-color: #ef4444;
+            --tue-color: #f59e0b;
+            --wed-color: #10b981;
+            --thu-color: #8b5cf6;
+            --fri-color: #ec4899;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem; /* Responsive outer padding */
+        }
+
+        /* Fully Responsive Card wrapper */
+        #schedule-card {
+            width: 100%;
+            max-width: 540px; /* Safe boundaries on larger screens */
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 1.5rem;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: clamp(1.25rem, 5vw, 1.75rem); /* Dynamically scales font size based on screen width */
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .day-section {
+            margin-bottom: 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 1rem;
+            padding: 1rem;
+            border-left: 5px solid var(--accent-primary);
+        }
+
+        /* Border Left Colors */
+        .day-section.monday { border-left-color: var(--mon-color); }
+        .day-section.tuesday { border-left-color: var(--tue-color); }
+        .day-section.wednesday { border-left-color: var(--wed-color); }
+        .day-section.thursday { border-left-color: var(--thu-color); }
+        .day-section.friday { border-left-color: var(--fri-color); }
+
+        .day-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.75rem;
+            padding-left: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .day-section.monday .day-title { color: var(--mon-color); }
+        .day-section.tuesday .day-title { color: var(--tue-color); }
+        .day-section.wednesday .day-title { color: var(--wed-color); }
+        .day-section.thursday .day-title { color: var(--thu-color); }
+        .day-section.friday .day-title { color: var(--fri-color); }
+
+        .class-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 1rem; /* Keeps room and title separated */
+        }
+
+        .class-row:last-child {
+            border-bottom: none;
+        }
+
+        .class-info {
+            flex-grow: 1;
+        }
+
+        .class-name {
+            font-size: clamp(0.75rem, 3.5vw, 0.825rem);
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .class-time {
+            font-size: 0.685rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .class-room {
+            background-color: rgba(255, 255, 255, 0.06);
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.5rem;
+            font-size: 0.685rem;
+            font-weight: 700;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        /* Room styling colors based on day */
+        .monday .class-room { color: var(--mon-color); background: rgba(239, 68, 68, 0.1); }
+        .tuesday .class-room { color: var(--tue-color); background: rgba(245, 158, 11, 0.1); }
+        .wednesday .class-room { color: var(--wed-color); background: rgba(16, 185, 129, 0.1); }
+        .thursday .class-room { color: var(--thu-color); background: rgba(139, 92, 246, 0.1); }
+        .friday .class-room { color: var(--fri-color); background: rgba(236, 72, 153, 0.1); }
+
+        /* Media Query for extremely small screens (older phones) */
+        @media (max-width: 380px) {
+            #schedule-card {
+                padding: 1.25rem 0.85rem;
+                border-radius: 1rem;
+            }
+            .class-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .class-room {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="schedule-card">
+        <div class="header">
+            <h1>Class Schedule</h1>
+            <p>1st Semester</p>
+        </div>
+
+        <div class="day-section monday">
+            <div class="day-title">Monday</div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Understanding the Self</div>
+                    <div class="class-time">08:30 AM - 10:00 AM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Science, Technology, and Society</div>
+                    <div class="class-time">11:30 AM - 01:00 PM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Computer Programming I</div>
+                    <div class="class-time">01:00 PM - 04:00 PM</div>
+                </div>
+                <div class="class-room">RM 1804</div>
+            </div>
+        </div>
+
+        <div class="day-section tuesday">
+            <div class="day-title">Tuesday</div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Christian Vision of the Human Person</div>
+                    <div class="class-time">07:00 AM - 08:30 AM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Mathematics in the Modern World</div>
+                    <div class="class-time">10:00 AM - 11:30 AM</div>
+                </div>
+                <div class="class-room">RM 2004</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Art Appreciation</div>
+                    <div class="class-time">11:30 AM - 01:00 PM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Computer Programming I</div>
+                    <div class="class-time">02:00 PM - 04:00 PM</div>
+                </div>
+                <div class="class-room">RM 1813</div>
+            </div>
+        </div>
+
+        <div class="day-section wednesday">
+            <div class="day-title">Wednesday</div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Introduction to Computing</div>
+                    <div class="class-time">07:00 AM - 08:30 AM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Understanding the Self</div>
+                    <div class="class-time">08:30 AM - 10:00 AM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Values Education</div>
+                    <div class="class-time">10:00 AM - 11:00 AM</div>
+                </div>
+                <div class="class-room">RM 2006</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Science, Technology, and Society</div>
+                    <div class="class-time">11:30 AM - 01:00 PM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+        </div>
+
+        <div class="day-section thursday">
+            <div class="day-title">Thursday</div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Christian Vision of the Human Person</div>
+                    <div class="class-time">07:00 AM - 08:30 AM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Mathematics in the Modern World</div>
+                    <div class="class-time">10:00 AM - 11:30 AM</div>
+                </div>
+                <div class="class-room">RM 2004</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Art Appreciation</div>
+                    <div class="class-time">11:30 AM - 01:00 PM</div>
+                </div>
+                <div class="class-room">RM 2008</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Values Education</div>
+                    <div class="class-time">03:00 PM - 04:00 PM</div>
+                </div>
+                <div class="class-room">RM 2015</div>
+            </div>
+        </div>
+
+        <div class="day-section friday">
+            <div class="day-title">Friday</div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Introduction to Computing</div>
+                    <div class="class-time">07:00 AM - 08:30 AM</div>
+                </div>
+                <div class="class-room">RM 2009</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">Computer Programming I</div>
+                    <div class="class-time">08:30 AM - 10:30 AM</div>
+                </div>
+                <div class="class-room">RM 1913</div>
+            </div>
+            <div class="class-row">
+                <div class="class-info">
+                    <div class="class-name">PATH-FIT 1</div>
+                    <div class="class-time">01:00 PM - 03:00 PM</div>
+                </div>
+                <div class="class-room">GYM</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
