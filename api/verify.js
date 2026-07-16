@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const MASTER_PASSCODE = "Janna1003";
+const MASTER_PASSCODE = "hotdog123";
 
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
