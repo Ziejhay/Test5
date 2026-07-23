@@ -1,12 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>zc</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Organizer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
 </head>
-<body>
-	<h1>HELO</h1>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600 rounded-lg text-white">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Account Organizer</h1>
+                    <p class="text-xs text-slate-400">Keep your login credentials managed and secure</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div class="relative flex-1 max-w-md">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search accounts, emails, usernames..." 
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm text-slate-200 placeholder-slate-500"
+                >
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-800/40 p-1 rounded-xl border border-slate-700/50 self-start">
+                <button onclick="filterAccounts('all')" id="btn-all" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white transition">
+                    All Accounts
+                </button>
+                <button onclick="filterAccounts('direct')" id="btn-direct" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition">
+                    Direct Logins
+                </button>
+                <button onclick="filterAccounts('linked')" id="btn-linked" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition">
+                    Linked Accounts
+                </button>
+            </div>
+        </div>
+
+        <div id="accountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-slate-500">
+            <i data-lucide="folder-open" class="w-12 h-12 mb-3 stroke-[1.5]"></i>
+            <p class="text-sm">No accounts found matching your search.</p>
+        </div>
+    </main>
+
+    <script>
+        const accountsData = [
+            { platform: "Amazon", username: "ziejhay cantalejo", contact: "ziejhaycantalejo09@gmail.com / 09158178047", password: "1FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "Apple", username: "Ziejhay Cantalejo", contact: "ziejhaycantalejo09@gmail.com / 09695307895", password: "Mp0f0l47s6c09", type: "direct" },
+            { platform: "Discord", username: "Ziejhay#5591", contact: "—", password: "09158178047", type: "direct" },
+            { platform: "Facebook (Personal)", username: "Ziejhay Cantalejo", contact: "09695307895", password: "Mp0f0l47s6cFB", type: "direct" },
+            { platform: "Gcash", username: "Ziejhay Cantalejo", contact: "09695307895", password: "092608", type: "direct" },
+            { platform: "Github", username: "Ziejhay09", contact: "ziejhaycantalejo84@gmail.com", password: "FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "Google (Main)", username: "Ziejhay Cantalejo", contact: "ziejhaycantalejo0909@gmail.com / 09695307895", password: "Mp0f0l47s6cMAIN", type: "direct" },
+            { platform: "Google (Alt 1)", username: "Ziejhay Cantalejo", contact: "ziejhaycantalejo09@gmail.com / 09695307895", password: "Mp0f0l47s6cALT1", type: "direct" },
+            { platform: "Google (Alt 2)", username: "Ziejhay Cantalejo", contact: "ziejhacantalejo84@gmail.com / 09695307895", password: "Mp0f0l47s6cALT2", type: "direct" },
+            { platform: "Google (Work/School)", username: "ZIEJHAY CANTALEJO", contact: "ziejhay.cantalejo@ust.edu.ph", password: "Mp0f0l47s6cUST", type: "direct" },
+            { platform: "GoTyme", username: "Ziejhay09", contact: "ziejhaycantalejo84@gmail.com", password: "FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "Instagram", username: "ziieieie", contact: "09695307895", password: "Mp0f0l47s6cIG", type: "direct" },
+            { platform: "LTO Portal", username: "Ziejhay Cantalejo", contact: "ziejhaycantalejo0909@gmail.com", password: "Mp0f0l47s6c09", type: "direct" },
+            { platform: "Maribank", username: "Ziejhay Cantalejo", contact: "ziejhaycantalejo0909@gmail.com / 09695307895", password: "260908", type: "direct" },
+            { platform: "Microsoft", username: "—", contact: "09481465045", password: "FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "Snapchat", username: "Ziejhay0909", contact: "09158178047", password: "FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "Spotify", username: "ziejhay", contact: "ziejhaycantalejo0909@gmail.com", password: "FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "Telegram", username: "ziejhay", contact: "09158178046", password: "0926", type: "direct" },
+            { platform: "Twitter", username: "Zie_jhay", contact: "09158178047", password: "FMaysAxYLitEHORaZC", type: "direct" },
+            { platform: "WhatsApp", username: "ziejhay", contact: "09158178047", password: "092608", type: "direct" },
+            
+            { platform: "Adobe", username: "—", contact: "Linked via Google (Main)", password: "—", type: "linked" },
+            { platform: "Canva", username: "—", contact: "Linked via Google (Main)", password: "—", type: "linked" },
+            { platform: "Capcut", username: "—", contact: "Linked via Facebook (Main)", password: "—", type: "linked" },
+            { platform: "Lazada", username: "—", contact: "Linked via Google (Main)", password: "—", type: "linked" },
+            { platform: "Pinterest", username: "—", contact: "Linked via Google (Main)", password: "—", type: "linked" },
+            { platform: "Shopee", username: "—", contact: "Linked via Google (Main)", password: "—", type: "linked" },
+            { platform: "Tiktok", username: "zieetlog09", contact: "Linked via Google (Main)", password: "—", type: "linked" }
+        ];
+
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAccounts();
+            lucide.createIcons();
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderAccounts();
+            });
+        });
+
+        function copyText(text, btnElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = btnElement.innerHTML;
+                btnElement.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>`;
+                lucide.createIcons();
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHTML;
+                    lucide.createIcons();
+                }, 1500);
+            });
+        }
+
+        function togglePassword(index) {
+            const pwdField = document.getElementById(`pwd-${index}`);
+            const pwdEye = document.getElementById(`eye-${index}`);
+            if (pwdField.type === "password") {
+                pwdField.type = "text";
+                pwdEye.innerHTML = `<i data-lucide="eye-off" class="w-4 h-4"></i>`;
+            } else {
+                pwdField.type = "password";
+                pwdEye.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function filterAccounts(filter) {
+            currentFilter = filter;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-slate-400', 'hover:text-slate-200');
+            });
+
+            const activeBtn = document.getElementById(`btn-${filter}`);
+            activeBtn.classList.remove('text-slate-400', 'hover:text-slate-200');
+            activeBtn.classList.add('bg-indigo-600', 'text-white');
+
+            renderAccounts();
+        }
+
+        function renderAccounts() {
+            const grid = document.getElementById('accountsGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            // Filter accounts
+            const filtered = accountsData.filter(acc => {
+                if (currentFilter !== 'all' && acc.type !== currentFilter) return false;
+                
+                if (searchQuery) {
+                    return acc.platform.toLowerCase().includes(searchQuery) || 
+                           acc.username.toLowerCase().includes(searchQuery) || 
+                           acc.contact.toLowerCase().includes(searchQuery);
+                }
+                return true;
+            });
+
+            // Sort alphabetically by platform name
+            filtered.sort((a, b) => a.platform.localeCompare(b.platform));
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            filtered.forEach((acc, index) => {
+                const isLinked = acc.type === 'linked';
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/40 border border-slate-700/50 hover:border-indigo-500/50 rounded-2xl p-5 transition-all duration-300 flex flex-col justify-between hover:shadow-xl hover:shadow-indigo-500/5";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="font-bold text-base tracking-wide text-white">${acc.platform}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                                isLinked ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            }">
+                                ${acc.type === 'direct' ? 'Direct' : 'Linked'}
+                            </span>
+                        </div>
+
+                        <div class="space-y-3 mb-4 text-xs">
+                            <div>
+                                <span class="text-slate-500 block mb-0.5 uppercase tracking-wider font-semibold text-[10px]">Username</span>
+                                <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                                    <span class="text-slate-200 select-all truncate max-w-[200px]">${acc.username}</span>
+                                    ${acc.username !== '—' ? `
+                                        <button onclick="copyText('${acc.username}', this)" class="text-slate-400 hover:text-white transition p-0.5" title="Copy Username">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="text-slate-500 block mb-0.5 uppercase tracking-wider font-semibold text-[10px]">Email / Contact</span>
+                                <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                                    <span class="text-slate-200 select-all truncate max-w-[200px]" title="${acc.contact}">${acc.contact}</span>
+                                    ${acc.contact !== '—' && !isLinked ? `
+                                        <button onclick="copyText('${acc.contact}', this)" class="text-slate-400 hover:text-white transition p-0.5" title="Copy Contact">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-700/40 mt-auto">
+                        ${isLinked ? `
+                            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 italic">
+                                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                                <span>No password needed (Linked login)</span>
+                            </div>
+                        ` : `
+                            <span class="text-slate-500 block mb-1.5 uppercase tracking-wider font-semibold text-[10px]">Password</span>
+                            <div class="flex items-center gap-1.5 bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                                <input 
+                                    id="pwd-${index}" 
+                                    type="password" 
+                                    value="${acc.password}" 
+                                    readonly 
+                                    class="bg-transparent text-slate-100 font-mono text-sm w-full focus:outline-none select-all"
+                                >
+                                <button onclick="togglePassword(${index})" id="eye-${index}" class="text-slate-400 hover:text-white transition p-0.5" title="Toggle visibility">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="copyText('${acc.password}', this)" class="text-slate-400 hover:text-white transition p-0.5" title="Copy Password">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+    </script>
 </body>
 </html>
